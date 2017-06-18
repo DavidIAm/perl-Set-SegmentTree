@@ -1,26 +1,19 @@
-namespace RuleIntervals;
+namespace IntervalTree;
 
 file_identifier "RTRE";
-
-struct rule {
-  domain : string;
-  name : string;
-  version : string;
-  uuid : [byte];
-}
 
 struct node {
   min_time : int;
   min_node : int;
   max_time : int;
   max_node : int;
-  rules : [rule];
+  key : string;
 }
 
-table RuleLookup {
+table ValueLookup {
   root : node;
   nodes: [node];
   created : int;
 }
 
-root_type RuleLookup;
+root_type ValueLookup;
