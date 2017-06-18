@@ -1,0 +1,26 @@
+namespace RuleIntervals;
+
+file_identifier "RTRE";
+
+struct rule {
+  domain : string;
+  name : string;
+  version : string;
+  uuid : [byte];
+}
+
+struct node {
+  min_time : int;
+  min_node : int;
+  max_time : int;
+  max_node : int;
+  rules : [rule];
+}
+
+table RuleLookup {
+  root : node;
+  nodes: [node];
+  created : int;
+}
+
+root_type RuleLookup;
