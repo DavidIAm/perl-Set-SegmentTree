@@ -95,7 +95,7 @@ Set::SegmentTree - Perl extension for Segment Trees
 wat? L<Segment Tree|https://en.wikipedia.org/wiki/Segment_tree>
 
 A Segment tree is an immutable tree structure used to efficiently
-resolve a moment to the set of segments which it intersects.
+resolve a value to the set of segments which encompass it.
 
 A segment:
  [ Start Value , End Value , Segment Label ]
