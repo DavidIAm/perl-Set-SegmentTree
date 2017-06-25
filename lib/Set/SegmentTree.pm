@@ -12,9 +12,10 @@ require Exporter;
 
 our $VERSION = '0.01';
 
-use Carp qw/confess croak/;
+use Carp qw/confess croak carp/;
 use Set::SegmentTree::ValueLookup;
 use List::Util qw/uniq/;
+use File::Map qw/map_file/;
 use Set::SegmentTree::Builder;
 
 use strict;
@@ -29,8 +30,8 @@ sub from_file {
     my ( $class, $filename ) = @_;
     map_file my $bin, $filename, '<';
     return
-        bless { flatbuffer =>
-            Set::SegmentTree::ValueLookup->deserialize($bin) },
+        bless {
+        flatbuffer => Set::SegmentTree::ValueLookup->deserialize($bin) },
         $class;
 }
 
@@ -44,8 +45,8 @@ sub deserialize {
 
 sub find {
     my ( $self, $instant ) = @_;
-    return uniq $self->find_segments( $self->node( $self->{flatbuffer}->root ),
-        $instant );
+    return uniq $self->find_segments(
+        $self->node( $self->{flatbuffer}->root ), $instant );
 }
 
 sub node {
@@ -57,15 +58,13 @@ sub find_segments {
     my ( $self, $node, $instant ) = @_;
     warn "instant $instant node "
         . $node->min . '->'
-        . $node->split . '->'
         . $node->max . q^: ^
         . join( q^ ^, sort @{ $node->segments || [] } ) . "\n"
         if $self->{verbose};
     return uniq @{ $node->segments || [] },
         map { $self->find_segments( $_, $instant ) }
         grep { $instant >= $_->{min} && $instant <= $_->{max} }
-        map { $node->$_ ? $self->node( $node->$_ ) : () }
-        qw/low high/;
+        map { $node->$_ ? $self->node( $node->$_ ) : () } qw/low high/;
 }
 
 1;
@@ -97,9 +96,11 @@ resolve a value to the set of segments which encompass it.
 A segment:
  [ Segment Label, Start Value , End Value ]
 
-Wherein the Start and End values are expected to be numeric.
+Start Value and End Values Must be numeric.
 
 Start Value Must be less than End Value
+
+Segment Label Must occur exactly once
 
 The speed of Set::SegmentTree depends on not being concerned
 with additional segment relevant data, so it is expected one would
@@ -151,6 +152,85 @@ This structure is useful in the use case where...
 
 The Segment Tree data structure allows you to resolve any single value to the
 list of segments which encompass it in O(log(n)+nk) 
+
+=head1 HOW IT WORKS
+
+=over 4
+
+=item Building
+
+l=label
+v=value
+L=low
+H=high
+
+1) take the list of endpoints  aL, aH, bL, bH
+1) sort the endpoints  aL, bL, aH, bH
+1) expand to elementary aL->aL, aL->bL, bL->bL, bL->aH, aH->aH, aH->bH, bH->bH
+1) create binary tree from this { Vmin, Vmax, ->low, ->high, @segments }
+1) populate segments on leaf nodes with the labels they relate to (see below)
+1) load into a google flatbuffer table
+
+Each leaf node spans only one of the elementary segments, and has a list
+of all of the segments which matching values within its range.
+
+  Many are super familiar with how to build trees, but being new to
+  me I document my notes here.
+
+  When handling elementary indexes 10 through 14, this math
+  to spliting into tree 
+
+  10, 14 => int((14-10)/2)+10 = int(4/2)+10 = 2+10 = <10, 12, 14>
+                           <10L, 14H>
+              <10L, 12H  >                  <12L, 14H>
+        <10L, 11H>    <12L, @S, 12H>    <12L, 13H>     <14L, @S, 14H>
+  <10L, @S, 10H> <11L, @S, 11H>  <12L, @S, 12H> <13L, @S, 13H>
+
+  10 to 13 has an even number and looks like this.
+
+  10, 13 => int((13-10)/2)+10 = int(3/2)+10 = 1+10 = <10, 11, 13>
+                     <10L, 13H>
+            <10L, 11H>              <12L, 12H, 13H>
+  <10L, @S, 10H> <11L, @S, 11H> <12L, @S , 12H> <13L, @S , 13H>
+
+  10 to 12 goes  this way
+
+  10, 12 => int((12-10)/2)+10 = int(2/2)+10 = 1+10 = <10, 11, 12>
+                          <10L, 12H>
+            <10L, 11H>                   <12L, 12H>
+  <10L, @S, 10H> <11L, @S, 11H>                  <12L, @S, 12H>
+
+  only two left
+
+  10, 11 => int((11-10)/2)+10 = int(1/2)+10 = 0+10 = <10, 10, 11>
+                     <10L, 11H>
+                               <11L, 12H>
+                         <11L, @S, 11H>  <12L, @S, 12H>
+
+  Just one node
+
+  10, 10 => int((10-10)/2)+10 = int(0/2)+10 = 0+10 = <10, 10 , 11>
+                     <10, @S, 10>
+
+=head2 Populating segments
+
+The way this works is that after I had constructed the tree, I made a loop
+that finds the leaf nodes.  (they have undefined low/high pointers).
+For each of the leaf nodes I filtered the original segment list
+(pre-expansion so fairly short, and includes the labels), comparing the
+values of that leaf node to see if its numbers were inside the range
+that segment addressed. After filtering, I just mapped them to their
+label value.
+
+  foreach my $node (grep { is_leaf? } $self->allnodes) {
+    $node->{segments} = map { to_label }
+      grep { leafnode_within_segment? } @segments
+  }
+
+where k = number of segments
+where j = number of distinct elementary segments (>k*2)
+This O(sqrt(j)+j*k) algorithm is probably responsible for most of the build
+time, but without it the tree is useless.
 
 =head1 SUBROUTINES/METHODS
 

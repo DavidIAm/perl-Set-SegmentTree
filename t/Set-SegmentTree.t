@@ -12,7 +12,7 @@ use Data::Dumper;
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 27;
 BEGIN { use_ok('Set::SegmentTree') }
 
 our @nodelist;
@@ -48,10 +48,10 @@ is scalar $tree->find(6), 1, 'find 6';
 is scalar $tree->find(7), 1, 'find 7';
 is scalar $tree->find(8), 1, 'find 8';
 is scalar $tree->find(9), 0, 'find 9';
-is scalar $tree->find(10), 1, 'find 9';
-is scalar $tree->find(11), 1, 'find 9';
-is scalar $tree->find(12), 1, 'find 9';
-is scalar $tree->find(13), 0, 'find 9';
+is scalar $tree->find(10), 1, 'find 10';
+is scalar $tree->find(11), 1, 'find 11';
+is scalar $tree->find(12), 1, 'find 12';
+is scalar $tree->find(13), 0, 'find 13';
 
 my$size = $rawtree->to_file('smalltemp.fastbuf');
 ok $size, 'file write succeed';
@@ -67,6 +67,12 @@ is scalar $readtree->find(6), 1, 'read 6';
 is scalar $readtree->find(7), 1, 'read 7';
 is scalar $readtree->find(8), 1, 'read 8';
 is scalar $readtree->find(9), 0, 'read 9';
+is scalar $readtree->find(10), 1, 'find 10';
+is scalar $readtree->find(11), 1, 'find 11';
+is scalar $readtree->find(12), 1, 'find 12';
+is scalar $readtree->find(13), 0, 'find 13';
+
+exit;
 
 sub rand_over_range {
     my ( $min, $max ) = @_;

@@ -3,7 +3,7 @@
 package Set::SegmentTree::Builder;
 use strict;
 use warnings;
-use Carp qw/croak confess/;
+use Carp qw/croak confess carp/;
 use IO::File;
 use Time::HiRes qw/gettimeofday/;
 use File::Map qw/map_file/;
@@ -11,10 +11,11 @@ use List::Util qw/reduce/;
 use Set::SegmentTree::ValueLookup;
 use Readonly;
 
-Readonly our $INTERVAL_IDX       => 0;
 Readonly our $INTERVAL_UUID      => 0;
 Readonly our $INTERVAL_MIN       => 1;
 Readonly our $INTERVAL_MAX       => 2;
+Readonly our $ELEMENTARY_MIN     => 0;
+Readonly our $ELEMENTARY_MAX     => 1;
 Readonly our $TRUE               => 1;
 Readonly our $MS_IN_NS           => 1000;
 Readonly our $INTERVALS_PER_NODE => 2;
@@ -31,10 +32,9 @@ sub new_instance {
 }
 
 sub build {
-    my ( $self ) = @_;
-    $self->build_tree(@{$self->{segment_list}});
-    return Set::SegmentTree->deserialize(
-        $self->serialize );
+    my ($self) = @_;
+    $self->build_tree( @{ $self->{segment_list} } );
+    return Set::SegmentTree->deserialize( $self->serialize );
 }
 
 sub new {
@@ -45,14 +45,14 @@ sub new {
 }
 
 sub insert {
-  my ($self, @list) = @_;
-  confess "This tree already built. Make a new one" if $self->{locked};
-  push @{$self->{segment_list}}, @list;
-  return $self;
+    my ( $self, @list ) = @_;
+    confess "This tree already built. Make a new one" if $self->{locked};
+    push @{ $self->{segment_list} }, @list;
+    return $self;
 }
 
 sub serialize {
-    my ( $self) = @_;
+    my ($self) = @_;
     confess "Cannot serialized unlocked tree" unless $self->{locked};
 
     my $t = Set::SegmentTree::ValueLookup->new(
@@ -64,9 +64,14 @@ sub serialize {
 }
 
 sub to_file {
-  my ($self, $outfile ) = @_;
+    my ( $self, $outfile ) = @_;
+    unless ( $self->{locked} ) {
+        carp 'you asked for to_file without building first. '
+            . 'Building now. This is expensive.'
+            . $self->build;
+    }
     my $out = IO::File->new( $outfile, '>:raw' );
-    $out->print($self->serialize);
+    $out->print( $self->serialize );
     undef $out;
     return -s $outfile;
 }
@@ -83,35 +88,16 @@ sub endpoints {
     return @list;
 }
 
-sub add_endpoint_uuid {
-    my ( $self, $stime, $etime, $uuid ) = @_;
-    warn "add for $stime to $etime $uuid\n" if $self->{verbose};
-    return $self->{idx}{ $stime . q^-^ . $etime }{$uuid} = $TRUE;
-}
-
-# uuids for endpoint
-sub endpoint_uuids {
-    my ( $self, $min, $max ) = @_;
-    my $offset = 0;
-    warn "lookup endpoint $min-$max time " . q^ - ^
-        . join( q^+^, sort keys %{ $self->{idx}{ $min . q^-^ . $max } } )
-        . "\n"
-        if $self->{verbose};
-    return keys %{ $self->{idx}{ $min . q^-^ . $max } };
-}
-
 sub place_intervals {
     my ( $self, @intervals ) = @_;
     foreach my $node ( @{ $self->{nodelist} } ) {
         next if exists $node->{low};
-        foreach my $interval (@intervals) {
-            my ( $min, $max, $uuid ) = @{$interval};
-            if ( $node->{min} >= $min && $node->{max} <= $max ) {
-                $self->add_endpoint_uuid( $node->{min}, $node->{max}, $uuid );
-            }
-        }
-        @{ $node->{segments} }
-            = $self->endpoint_uuids( $node->{min}, $node->{max} );
+        $node->{segments} = [
+            map { $_->[$INTERVAL_UUID] } grep {
+                       $node->{min} >= $_->[$INTERVAL_MIN]
+                    && $node->{max} <= $_->[$INTERVAL_MAX];
+            } @intervals
+        ];
     }
     return;
 }
@@ -173,35 +159,10 @@ sub build_binary {
     $cc++;
     my $mid = int( ( $to - $from ) / $INTERVALS_PER_NODE ) + $from;
     my $node = {
-        split => $self->endpoint( $mid,  $INTERVAL_MAX ),
-        min   => $self->endpoint( $from, $INTERVAL_MIN ),
-        max   => $self->endpoint( $to,   $INTERVAL_MAX ),
+        min   => $self->endpoint( $from, $ELEMENTARY_MIN ),
+        max   => $self->endpoint( $to,   $ELEMENTARY_MAX ),
     };
 
-# 10, 14 => int((14-10)/2)+10 = int(4/2)+10 = 2+10 = <10, 12, 14>
-#                                      <10L, 12H, 14H>
-#                     <10L, 11H, 12H>                  <12L, 13H, 14H>
-#       <10L, 10H, 11H>          <12L, - , 12H>    <12L, 12H , 13H> <14L, - , 14H>
-# <10L, - , 10H> <11L, - , 11H>               <12L, - , 12H> <13L, - , 13H>
-#
-# 10, 13 => int((13-10)/2)+10 = int(3/2)+10 = 1+10 = <10, 11, 13>
-#                    <10L, 11H, 13H>
-#       <10L, 10H, 11H>              <12L, 12H, 13H>
-# <10L, - , 10H> <11L, - , 11H> <12L, - , 12H> <13L, - , 13H>
-#
-# 10, 12 => int((12-10)/2)+10 = int(2/2)+10 = 1+10 = <10, 11, 12>
-#                       <10L, 11L, 12H>
-#       <10L, 10H , 11H>              <11L, 11H , 12H>
-# <10L, - , 10H> <11L, - , 11H> <11L, - , 11H> <12L, -, 12H>
-#
-# 10, 11 => int((11-10)/2)+10 = int(1/2)+10 = 0+10 = <10, 10, 11>
-#                    <10L, 10H, 11H>
-#                              <11L, 11H , 12H>
-#                        <11L, - , 11H>  <12L, - , 12H>
-#
-# 10, 10 => int((10-10)/2)+10 = int(0/2)+10 = 0+10 = <10, 10 , 11>
-#                    <10, -, 10>
-#                                 <11, - , 11>
     if ( $from != $to ) {
         $node->{low}  = $self->build_binary( $from,    $mid );
         $node->{high} = $self->build_binary( $mid + 1, $to );
