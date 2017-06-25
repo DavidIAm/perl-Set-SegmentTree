@@ -1,17 +1,18 @@
-namespace IntervalTree;
+namespace SegmentTree;
 
 file_identifier "RTRE";
 
-struct node {
-  min_time : int;
-  min_node : int;
-  max_time : int;
-  max_node : int;
-  key : string;
+table node {
+  min: int;
+  low : int;
+  max : int;
+  high : int;
+  split : int;
+  segments : [string];
 }
 
 table ValueLookup {
-  root : node;
+  root : int;
   nodes: [node];
   created : int;
 }
