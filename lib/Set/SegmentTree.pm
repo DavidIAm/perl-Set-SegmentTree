@@ -248,51 +248,78 @@ __END__
 
 =head1 NAME
 
-Set::SegmentTree - Perl extension for immutable interval trees
-
-=head1 VERSION
-
-alpha
+Set::SegmentTree - Perl extension for Segment Trees
 
 =head1 SYNOPSIS
 
   use Set::SegmentTree;
-  my $treehandler = Set::SegmentTree->new(schema => 'schema.fbs');
-  my $lookup = $treehandler->load('filename');
-  my $value = $lookup->find('keyvalue');
+  my $newtree = Set::SegmentTree->build(file => 'tree.bin');
+  $newtree->build([ start, end, segment_name ], [ start, end, segment_name ]);
+  my @segments = $treehandler->find($value);
+  $newtree->serialize( $filename );
+
+  my $savedtree = Set::SegmentTree->deserialize( $filename );
+  my @segments = $savedtree->find($value);
 
 =head1 DESCRIPTION
 
-Stub documentation for Set::SegmentTree, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+wat? [[https://en.wikipedia.org/wiki/Segment_tree]]
 
-Blah blah blah.
+In the use case where 
+
+1) you have a series of potentially overlapping segments
+1) you need to know which segments encompass any particular value
+1) the access pattern is almost exclustively read biased
+
+The Segment Tree data structure allows you to resolve any single value to the
+list of segments which encompass it in O(log(n)+nk) 
 
 =head2 EXPORT
 
-None by default.
+This is not that kind of perl module
 
 =head1 SUBROUTINES/METHODS
 
-build
-find
-serialize
+=over 4
+
+=item build
+
+  creates a new segment tree
+  pass a list of intervals
+  returns the tree object
+
+  Intervals are defined as arrays with
+   [ low_value, high_value, identifier_name ]
+
+=item find
+
+  find the list of segments for a value
+  expected to be performant
+
+  pass the value
+  returns the list of segment names
+
+=item serialize
+
+  save the tree to a file
+  Writes a google flatbuffer style file
+
+=item deserialize
+
+  make the tree available to query
+  Uses FlatBuffers and memory mapping
+  expected to be highly performant
+
+=back 4
 
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
-
-If you have a mailing list set up for your module, mention it here.
-
-If you have a web site set up for your module, mention it here.
+Data::FlatTables
+File::Map
 
 =head1 AUTHOR
 
-A. U. Thor, E<lt>skylos@E<gt>
+David Ihnen, E<lt>davidihnen@gmail.comE<gt>
 
 =head1 DIAGNOSTICS
 
@@ -300,7 +327,9 @@ extensive logging if you construct with option { verbose => 1 }
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-Read it, use it
+Written to require very little configuration or environment
+
+Reacts to no environment variables.
 
 =head1 INCOMPATIBILITIES
 
@@ -314,17 +343,17 @@ Google Flatbuffers
 
 Only works with FlatBuffers for serialization
 
-Subject the limitations of Data::FlatTables 
+Subject the limitations of Data::FlatTables
 
 Only stores keys for you to use to index into other structures
+I like uuids for that.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2017 by A. U. Thor
+Copyright (C) 2017 by David Ihnen
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.22.1 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
