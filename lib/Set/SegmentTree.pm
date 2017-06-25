@@ -310,7 +310,7 @@ This is not that kind of perl module
   Uses FlatBuffers and memory mapping
   expected to be highly performant
 
-=back 4
+=back
 
 =head1 SEE ALSO
 
