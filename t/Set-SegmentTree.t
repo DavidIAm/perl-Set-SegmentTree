@@ -36,7 +36,7 @@ our @nodelist;
 use Data::UUID;
 
 use Set::SegmentTree;
-my $rawtree = Set::SegmentTree::Builder->new([1,5,'A'],[2,3,'B'],[3,8,'C']);
+my $rawtree = Set::SegmentTree::Builder->new(['A',1,5],['B',2,3],['C',3,8],['D',10,12]);
 my $tree = $rawtree->build;
 is scalar $tree->find(0), 0, 'find 0';
 is scalar $tree->find(1), 1, 'find 1';
@@ -48,6 +48,10 @@ is scalar $tree->find(6), 1, 'find 6';
 is scalar $tree->find(7), 1, 'find 7';
 is scalar $tree->find(8), 1, 'find 8';
 is scalar $tree->find(9), 0, 'find 9';
+is scalar $tree->find(10), 1, 'find 9';
+is scalar $tree->find(11), 1, 'find 9';
+is scalar $tree->find(12), 1, 'find 9';
+is scalar $tree->find(13), 0, 'find 9';
 
 my$size = $rawtree->to_file('smalltemp.fastbuf');
 ok $size, 'file write succeed';

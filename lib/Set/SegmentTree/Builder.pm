@@ -6,13 +6,15 @@ use warnings;
 use Carp qw/croak confess/;
 use IO::File;
 use Time::HiRes qw/gettimeofday/;
-use List::Util qw/reduce uniq/;
+use File::Map qw/map_file/;
+use List::Util qw/reduce/;
+use Set::SegmentTree::ValueLookup;
 use Readonly;
 
 Readonly our $INTERVAL_IDX       => 0;
-Readonly our $INTERVAL_MIN       => 0;
-Readonly our $INTERVAL_MAX       => 1;
-Readonly our $INTERVAL_UUID      => 2;
+Readonly our $INTERVAL_UUID      => 0;
+Readonly our $INTERVAL_MIN       => 1;
+Readonly our $INTERVAL_MAX       => 2;
 Readonly our $TRUE               => 1;
 Readonly our $MS_IN_NS           => 1000;
 Readonly our $INTERVALS_PER_NODE => 2;
@@ -24,7 +26,7 @@ my $icc = 0;
 
 sub new_instance {
     my ( $class, $options ) = @_;
-    return bless { locked => 0, uuid_generator => Data::UUID->new, segment_list => [], %{ $options || {} } },
+    return bless { locked => 0, segment_list => [], %{ $options || {} } },
         $class;
 }
 
@@ -39,10 +41,10 @@ sub new {
     my ( $class, @list ) = @_;
     my $options = {};
     $options = pop @list if 'HASH' eq ref @list;
-    $class->new_instance($options)->add_segments(@list);
+    $class->new_instance($options)->insert(@list);
 }
 
-sub add_segments {
+sub insert {
   my ($self, @list) = @_;
   confess "This tree already built. Make a new one" if $self->{locked};
   push @{$self->{segment_list}}, @list;
@@ -222,7 +224,7 @@ Set::SegmentTree::Builder - Builder for Segment Trees in Perl
     @segment_list, 
     {option => ovalue}
     );
-  $builder->add_segments([ start, end, segment_name ], [ ... ]);
+  $builder->insert([ start, end, segment_name ], [ ... ]);
   isa_ok $builder->build(), 'Set::SegmentTree';
   $builder->to_file('filename');
 
@@ -254,7 +256,7 @@ list of segments which encompass it in O(log(n)+nk)
 
   [ low value, high value, string identifier ]
 
-=item add_segments
+=item insert
 
   allows incremental building if you don't have them all at once 
 

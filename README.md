@@ -6,7 +6,7 @@ Set::SegmentTree - Perl extension for Segment Trees
 
     use Set::SegmentTree;
     my $builder = Set::SegmentTree::Builder->new(@segment_list);
-    $builder->add_segments([ start, end, segment_name ], [ ... ]);
+    $builder->insert([ segment_name, start, end ], [ ... ]);
     my $newtree = $builder->build();
     my @segments = $newtree->find($value);
     $newtree->serialize( $filename );
@@ -22,11 +22,11 @@ A Segment tree is an immutable tree structure used to efficiently
 resolve a value to the set of segments which encompass it.
 
 A segment:
- \[ Start Value , End Value , Segment Label \]
+ \[ Segment Label, Start Value , End Value \]
 
 Wherein the Start and End values are expected to be numeric.
 
-Start Value is expected to be less than End Value
+Start Value Must be less than End Value
 
 The speed of Set::SegmentTree depends on not being concerned
 with additional segment relevant data, so it is expected one would
@@ -35,7 +35,7 @@ additional information about the segment.
 
 Use walkthrough
 
-    my @segments = ([1,5,'A'],[2,3,'B'],[3,8,'C'],[10,15,'D']);
+    my @segments = (['A',1,5],['B',2,3],['C',3,8],['D',10,15]);
 
 This defines four intervals which both do and don't overlap 
  - A - 1 to 5
@@ -135,7 +135,6 @@ None
 # SEE ALSO
 
 Data::FlatTables
-File::Map
 
 # INCOMPATIBILITIES
 
@@ -149,6 +148,8 @@ Google Flatbuffers
 
 Doesn't tell you if you matched the endpoint
 of a segment, but it could.
+
+Doesn't error check the integrity of a segment for numericity or order
 
 Only works with FlatBuffers for serialization
 
