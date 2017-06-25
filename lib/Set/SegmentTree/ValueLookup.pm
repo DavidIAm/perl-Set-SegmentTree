@@ -11,7 +11,7 @@ sub new {
 	$self->{root} = $args{root} if defined $args{root} and $args{root} != 0;
 	$self->{nodes} = 
 		[ map { 
-      Set::SegmentTree::node->new(%$_)
+			Set::SegmentTree::node->new(%$_)
 		} @{$args{nodes}} ]
 	if exists $args{nodes};
 	$self->{created} = $args{created} if defined $args{created} and $args{created} != 0;

@@ -12,7 +12,7 @@ sub new {
 	$self->{max} = $args{max} if defined $args{max} and $args{max} != 0;
 	$self->{high} = $args{high} if defined $args{high} and $args{high} != 0;
 	$self->{split} = $args{split} if defined $args{split} and $args{split} != 0;
-	$self->{segments} = $args{segments} if defined $args{segments};
+	$self->{segments} = $args{segments} if exists $args{segments};
 
 	return $self;
 }
@@ -53,7 +53,7 @@ sub deserialize {
 	$self->{max} = unpack 'l<', substr $data, $object_offset + $offsets[2], 4 if $offsets[2] != 0;
 	$self->{high} = unpack 'l<', substr $data, $object_offset + $offsets[3], 4 if $offsets[3] != 0;
 	$self->{split} = unpack 'l<', substr $data, $object_offset + $offsets[4], 4 if $offsets[4] != 0;
-	$self->{segments} = $self->deserialize_string($data, $object_offset + $offsets[5]) if $offsets[5] != 0;
+	$self->{segments} = $self->deserialize_array('[string]', $data, $object_offset + $offsets[5]) if $offsets[5] != 0;
 
 	return $self
 }
@@ -162,9 +162,9 @@ sub serialize {
 		}
 
 		if (defined $self->{segments}) {
-			my $string_object = $self->serialize_string($self->{segments});
-			push @objects, $string_object;
-			push @reloc, { offset => length ($data), item => $string_object, type => 'unsigned delta'};
+			my ($array_object, @array_objects) = $self->serialize_array('[string]', $self->{segments}, $cache);
+			push @objects, $array_object, @array_objects;
+			push @reloc, { offset => length ($data), item => $array_object, type => 'unsigned delta'};
 			$data .= "\0\0\0\0";
 		}
 
