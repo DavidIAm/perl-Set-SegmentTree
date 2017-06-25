@@ -263,7 +263,7 @@ Set::SegmentTree - Perl extension for Segment Trees
 
 =head1 DESCRIPTION
 
-wat? [[https://en.wikipedia.org/wiki/Segment_tree]]
+wat? L<Segment Tree|https://en.wikipedia.org/wiki/Segment_tree>
 
 In the use case where 
 

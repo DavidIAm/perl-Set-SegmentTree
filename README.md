@@ -15,7 +15,7 @@ Set::SegmentTree - Perl extension for Segment Trees
 
 # DESCRIPTION
 
-wat? \[\[https://en.wikipedia.org/wiki/Segment\_tree\]\]
+wat? [Segment Tree](https://en.wikipedia.org/wiki/Segment_tree)
 
 In the use case where 
 
