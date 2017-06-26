@@ -3,6 +3,7 @@ use ExtUtils::MakeMaker;
 use inc::Module::Install;
 
 readme_from 'lib/Set/SegmentTree.pm', 1, 'md';
+readme_from 'lib/Set/SegmentTree.pm';
 license ['perl_5'];
 
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
