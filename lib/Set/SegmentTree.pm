@@ -311,6 +311,25 @@ Data::FlatTables
 
 A system with variant endian maybe?
 
+=head1 PERFORMANCE
+
+Analysis at this early date indicates my vm with 1 3ghz cpu on 
+ubuntu linux is capable of consistently surpassing 1000
+lookups per second from a memory mapped file. Initializing the file
+into memory map takes no measurable time beyond file system overhead.
+
+Lookup performance from a native perl memory array is almost twice as
+fast.
+
+My vm with a quota of 1 3ghz cpu takes over 30 seconds to construct
+a segment tree consisting of 1000 root segments with a heavy
+degree of overlapping.  I suspect that this performance is adequate
+to my use cases.
+
+I suspect that converting the code to be compiled rather than pure
+perl could increase performance.  Also, my inefficient algorithm
+for populating labels into leaf nodes possibly could be improved.
+
 =head1 MOTIVATION
 
 My Replay project L<https://github.com/DavidIAm/Replay> has a use case
