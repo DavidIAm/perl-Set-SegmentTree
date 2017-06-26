@@ -1,6 +1,6 @@
 # NAME
 
-Set::SegmentTree - Perl extension for Segment Trees
+Set::SegmentTree - Immutable segment trees in perl
 
 # SYNOPSIS
 
@@ -32,7 +32,7 @@ Segment Label Must occur exactly once
 
 The speed of Set::SegmentTree depends on not being concerned
 with additional segment relevant data, so it is expected one would
-use the label as an index into whatever persistance retains
+use the label as an index into whatever persistence retains
 additional information about the segment.
 
 Use walkthrough
@@ -295,6 +295,10 @@ Copyright (C) 2017 by David Ihnen
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.22.1 or,
 at your option, any later version of Perl 5 you may have available.
+
+# VERSION
+
+0.01
 
 # AUTHOR
 

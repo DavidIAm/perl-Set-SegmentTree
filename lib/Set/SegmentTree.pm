@@ -4,12 +4,6 @@ use 5.022001;
 use strict;
 use warnings;
 
-require Exporter;
-
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
 our $VERSION = '0.01';
 
 use Carp qw/confess croak carp/;
@@ -72,7 +66,7 @@ __END__
 
 =head1 NAME
 
-Set::SegmentTree - Perl extension for Segment Trees
+Set::SegmentTree - Immutable segment trees with flatbuffers in perl
 
 =head1 SYNOPSIS
 
@@ -104,7 +98,7 @@ Segment Label Must occur exactly once
 
 The speed of Set::SegmentTree depends on not being concerned
 with additional segment relevant data, so it is expected one would
-use the label as an index into whatever persistance retains
+use the label as an index into whatever persistence retains
 additional information about the segment.
 
 Use walkthrough
@@ -371,6 +365,10 @@ Copyright (C) 2017 by David Ihnen
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.22.1 or,
 at your option, any later version of Perl 5 you may have available.
+
+=head1 VERSION
+
+0.01
 
 =head1 AUTHOR
 

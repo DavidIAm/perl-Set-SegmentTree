@@ -1,8 +1,10 @@
-######
-
 package Set::SegmentTree::Builder;
+
 use strict;
 use warnings;
+
+our $VERSION = '0.01';
+
 use Carp qw/croak confess carp/;
 use IO::File;
 use Time::HiRes qw/gettimeofday/;
@@ -40,20 +42,20 @@ sub build {
 sub new {
     my ( $class, @list ) = @_;
     my $options = {};
-    $options = pop @list if 'HASH' eq ref @list;
-    $class->new_instance($options)->insert(@list);
+    if ( 'HASH' eq ref @list ) { $options = pop @list; }
+    return $class->new_instance($options)->insert(@list);
 }
 
 sub insert {
     my ( $self, @list ) = @_;
-    confess "This tree already built. Make a new one" if $self->{locked};
+    confess 'This tree already built. Make a new one' if $self->{locked};
     push @{ $self->{segment_list} }, @list;
     return $self;
 }
 
 sub serialize {
     my ($self) = @_;
-    confess "Cannot serialized unlocked tree" unless $self->{locked};
+    confess 'Cannot serialized unlocked tree' if !$self->{locked};
 
     my $t = Set::SegmentTree::ValueLookup->new(
         root    => $self->{tree},
@@ -65,7 +67,7 @@ sub serialize {
 
 sub to_file {
     my ( $self, $outfile ) = @_;
-    unless ( $self->{locked} ) {
+    if ( !$self->{locked} ) {
         carp 'you asked for to_file without building first. '
             . 'Building now. This is expensive.'
             . $self->build;
@@ -159,8 +161,8 @@ sub build_binary {
     $cc++;
     my $mid = int( ( $to - $from ) / $INTERVALS_PER_NODE ) + $from;
     my $node = {
-        min   => $self->endpoint( $from, $ELEMENTARY_MIN ),
-        max   => $self->endpoint( $to,   $ELEMENTARY_MAX ),
+        min => $self->endpoint( $from, $ELEMENTARY_MIN ),
+        max => $self->endpoint( $to,   $ELEMENTARY_MAX ),
     };
 
     if ( $from != $to ) {
@@ -197,8 +199,8 @@ In the use case where
 
 1) you have a series of potentially overlapping segments
 1) you need to know which segments encompass any particular value
-1) the access pattern is almost exclustively read biased
-1) need to shift between prebuilt segment trees
+1) the access pattern is almost exclusively read biased
+1) need to shift between pre-built segment trees
 
 The Segment Tree data structure allows you to resolve any single value to the
 list of segments which encompass it in O(log(n)+nk) 
@@ -283,6 +285,10 @@ Copyright (C) 2017 by David Ihnen
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.22.1 or,
 at your option, any later version of Perl 5 you may have available.
+
+=head1 VERSION
+
+0.01
 
 =head1 AUTHOR
 

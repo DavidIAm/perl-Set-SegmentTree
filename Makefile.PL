@@ -11,7 +11,7 @@ license ['perl_5'];
 WriteMakefile(
     NAME => 'Set::SegmentTree',
     VERSION_FROM => 'lib/Set/SegmentTree.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
-    PREREQ_PM => { 'File::Map' => '0.64', 'Set::IntervalTree' => '0.01', },
+    PREREQ_PM => { 'Text::XT' => '0.04', 'File::Map' => '0.64', 'Set::IntervalTree' => '0.01', },
     ABSTRACT_FROM => 'lib/Set/SegmentTree.pm', # retrieve abstract from module
     LICENSE       => 'perl_5',
     AUTHOR        => 'David Ihnen <davidihnen@gmail.com>',
@@ -21,3 +21,4 @@ WriteMakefile(
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES    => 'Set-SegmentTree*' },
 );
+

@@ -12,7 +12,7 @@ use Data::Dumper;
 use strict;
 use warnings;
 
-use Test::More tests => 27;
+use Test::More tests => 31;
 BEGIN { use_ok('Set::SegmentTree') }
 
 our @nodelist;
