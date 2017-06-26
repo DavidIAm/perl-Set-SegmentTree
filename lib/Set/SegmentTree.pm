@@ -132,15 +132,14 @@ Would make these tests pass
  is_deeply [$tree->find(9)], [];
  is_deeply [$tree->find(12)], [qw/D/];
 
-And although this structure is relatively expensive to build, 
-it can be saved and then loaded and queried extremely quickly
+And although this structure is relatively expensive to build,
+it can be saved efficiently,
 
  my $builder = Set::SegmentTree::Builder->new(@segments);
- $builder->build;
  $builder->to_file('filename');
- ...
 
-Making this pass in only milliseconds.
+and then loaded and queried extremely quickly, making this 
+pass in only milliseconds.
 
  my $tree = Set::SegmentTree->from_file('filename');
  is_deeply [$tree->find(3)], [qw/A B C/];
@@ -311,6 +310,19 @@ Data::FlatTables
 =head1 INCOMPATIBILITIES
 
 A system with variant endian maybe?
+
+=head1 MOTIVATION
+
+My Replay project L<https://github.com/DavidIAm/Replay> has a use case
+for rapidly looking up intersection of an instant with a series of
+business rules which are configured with an effective from and to date.
+Any of the configuration states which are created over time result in a
+segment tree for lookup. Any of those states may be active, so being able
+to retrieve and query them efficiently is critical. This is part of
+the Mapper component's ability to determine which configured rules
+will be relevant to any particular incoming event.
+
+Collaborators welcome.
 
 =head1 DEPENDENCIES
 
