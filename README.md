@@ -83,60 +83,59 @@ list of segments which encompass it in O(log(n)+nk)
 
 # HOW IT WORKS
 
-- Building
+## Building Trees
+ l=label
+ v=value
+ L=low
+ H=high
 
-    l=label
-    v=value
-    L=low
-    H=high
+1) take the list of endpoints  aL, aH, bL, bH
+1) sort the endpoints  aL, bL, aH, bH
+1) expand to elementary aL->aL, aL->bL, bL->bL, bL->aH, aH->aH, aH->bH, bH->bH
+1) create binary tree from this { Vmin, Vmax, ->low, ->high, @segments }
+1) populate segments on leaf nodes with the labels they relate to (see below)
+1) load into a google flatbuffer table
 
-    1) take the list of endpoints  aL, aH, bL, bH
-    1) sort the endpoints  aL, bL, aH, bH
-    1) expand to elementary aL->aL, aL->bL, bL->bL, bL->aH, aH->aH, aH->bH, bH->bH
-    1) create binary tree from this { Vmin, Vmax, ->low, ->high, @segments }
-    1) populate segments on leaf nodes with the labels they relate to (see below)
-    1) load into a google flatbuffer table
+Each leaf node spans only one of the elementary segments, and has a list
+of all of the segments which matching values within its range.
 
-    Each leaf node spans only one of the elementary segments, and has a list
-    of all of the segments which matching values within its range.
+    Many are super familiar with how to build trees, but being new to
+    me I document my notes here.
 
-        Many are super familiar with how to build trees, but being new to
-        me I document my notes here.
+    When handling elementary indexes 10 through 14, this math
+    to spliting into tree 
 
-        When handling elementary indexes 10 through 14, this math
-        to spliting into tree 
+    10, 14 => int((14-10)/2)+10 = int(4/2)+10 = 2+10 = <10, 12, 14>
+                             <10L, 14H>
+                <10L, 12H  >                  <12L, 14H>
+          <10L, 11H>    <12L, @S, 12H>    <12L, 13H>     <14L, @S, 14H>
+    <10L, @S, 10H> <11L, @S, 11H>  <12L, @S, 12H> <13L, @S, 13H>
 
-        10, 14 => int((14-10)/2)+10 = int(4/2)+10 = 2+10 = <10, 12, 14>
-                                 <10L, 14H>
-                    <10L, 12H  >                  <12L, 14H>
-              <10L, 11H>    <12L, @S, 12H>    <12L, 13H>     <14L, @S, 14H>
-        <10L, @S, 10H> <11L, @S, 11H>  <12L, @S, 12H> <13L, @S, 13H>
+    10 to 13 has an even number and looks like this.
 
-        10 to 13 has an even number and looks like this.
+    10, 13 => int((13-10)/2)+10 = int(3/2)+10 = 1+10 = <10, 11, 13>
+                       <10L, 13H>
+              <10L, 11H>              <12L, 12H, 13H>
+    <10L, @S, 10H> <11L, @S, 11H> <12L, @S , 12H> <13L, @S , 13H>
 
-        10, 13 => int((13-10)/2)+10 = int(3/2)+10 = 1+10 = <10, 11, 13>
-                           <10L, 13H>
-                  <10L, 11H>              <12L, 12H, 13H>
-        <10L, @S, 10H> <11L, @S, 11H> <12L, @S , 12H> <13L, @S , 13H>
+    10 to 12 goes  this way
 
-        10 to 12 goes  this way
+    10, 12 => int((12-10)/2)+10 = int(2/2)+10 = 1+10 = <10, 11, 12>
+                            <10L, 12H>
+              <10L, 11H>                   <12L, 12H>
+    <10L, @S, 10H> <11L, @S, 11H>                  <12L, @S, 12H>
 
-        10, 12 => int((12-10)/2)+10 = int(2/2)+10 = 1+10 = <10, 11, 12>
-                                <10L, 12H>
-                  <10L, 11H>                   <12L, 12H>
-        <10L, @S, 10H> <11L, @S, 11H>                  <12L, @S, 12H>
+    only two left
 
-        only two left
+    10, 11 => int((11-10)/2)+10 = int(1/2)+10 = 0+10 = <10, 10, 11>
+                       <10L, 11H>
+                                 <11L, 12H>
+                           <11L, @S, 11H>  <12L, @S, 12H>
 
-        10, 11 => int((11-10)/2)+10 = int(1/2)+10 = 0+10 = <10, 10, 11>
-                           <10L, 11H>
-                                     <11L, 12H>
-                               <11L, @S, 11H>  <12L, @S, 12H>
+    Just one node
 
-        Just one node
-
-        10, 10 => int((10-10)/2)+10 = int(0/2)+10 = 0+10 = <10, 10 , 11>
-                           <10, @S, 10>
+    10, 10 => int((10-10)/2)+10 = int(0/2)+10 = 0+10 = <10, 10 , 11>
+                       <10, @S, 10>
 
 ## Populating segments
 
@@ -157,6 +156,24 @@ where k = number of segments
 where j = number of distinct elementary segments (>k\*2)
 This O(sqrt(j)+j\*k) algorithm is probably responsible for most of the build
 time, but without it the tree is useless.
+
+## Seeking segments
+
+As you probably know seeking in a binary tree is O(log(n)) complexity.
+
+Given an value and a root node, yield the segments by:
+
+Given to match a value, node
+1) start with the label set of the current node (noop unless leaf)
+2) union the label sets of the matching subnodes
+3) return the set
+
+label sets of the matching subnodes
+1) start with the list of possible directions (low, high)
+1) map to a list of subnodes (->low, ->high)
+1) ignore any that are undefined (leaf node condition, no infinite recursion)
+1) filter nodes on min <= value and value <= max
+1) recursively match with value, node
 
 # SUBROUTINES/METHODS
 
@@ -251,11 +268,3 @@ at your option, any later version of Perl 5 you may have available.
 # AUTHOR
 
 David Ihnen, &lt;davidihnen@gmail.com>
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 215:
-
-    You forgot a '=back' before '=head2'

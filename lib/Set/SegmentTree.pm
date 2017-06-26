@@ -155,14 +155,11 @@ list of segments which encompass it in O(log(n)+nk)
 
 =head1 HOW IT WORKS
 
-=over 4
-
-=item Building
-
-l=label
-v=value
-L=low
-H=high
+=head2 Building Trees
+ l=label
+ v=value
+ L=low
+ H=high
 
 1) take the list of endpoints  aL, aH, bL, bH
 1) sort the endpoints  aL, bL, aH, bH
@@ -231,6 +228,24 @@ where k = number of segments
 where j = number of distinct elementary segments (>k*2)
 This O(sqrt(j)+j*k) algorithm is probably responsible for most of the build
 time, but without it the tree is useless.
+
+=head2 Seeking segments
+
+As you probably know seeking in a binary tree is O(log(n)) complexity.
+
+Given an value and a root node, yield the segments by:
+
+Given to match a value, node
+1) start with the label set of the current node (noop unless leaf)
+2) union the label sets of the matching subnodes
+3) return the set
+
+label sets of the matching subnodes
+1) start with the list of possible directions (low, high)
+1) map to a list of subnodes (->low, ->high)
+1) ignore any that are undefined (leaf node condition, no infinite recursion)
+1) filter nodes on min <= value and value <= max
+1) recursively match with value, node
 
 =head1 SUBROUTINES/METHODS
 
