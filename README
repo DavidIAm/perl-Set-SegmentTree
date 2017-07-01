@@ -18,7 +18,19 @@ DESCRIPTION
     A Segment tree is an immutable tree structure used to efficiently
     resolve a value to the set of segments which encompass it.
 
-    A segment: [ Segment Label, Start Value , End Value ]
+    Why?
+
+    You have a large set of value intervals (like time segments!) and need
+    to match them against a single value (like a time) efficiently.
+
+    This solution is suitable for problems where the set of intervals is
+    known in advance of the queries, and the tree needs to be loaded and
+    queried efficiently many orders of magnitude more often than the set of
+    intervals is updated.
+
+    Data structure:
+
+    A segment is like this: [ Segment Label, Start Value , End Value ]
 
     Start Value and End Values Must be numeric.
 
