@@ -1,6 +1,6 @@
 # NAME
 
-Set::SegmentTree - Immutable segment trees in perl
+Set::SegmentTree - Immutable segment trees with flatbuffers in perl
 
 # SYNOPSIS
 
