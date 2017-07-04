@@ -216,7 +216,7 @@ CONFIGURATION AND ENVIRONMENT
     None
 
 SEE ALSO
-    Data::FlatTables
+    Data::FlatTables <https://github.com/DavidIAm/perl-Data-FlatTables>
 
 INCOMPATIBILITIES
     A system with variant endian maybe?

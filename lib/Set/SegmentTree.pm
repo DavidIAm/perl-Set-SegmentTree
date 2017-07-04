@@ -311,7 +311,7 @@ None
 
 =head1 SEE ALSO
 
-Data::FlatTables
+Data::FlatTables L<https://github.com/DavidIAm/perl-Data-FlatTables>
 
 =head1 INCOMPATIBILITIES
 

@@ -241,7 +241,7 @@ None
 
 # SEE ALSO
 
-Data::FlatTables
+Data::FlatTables [https://github.com/DavidIAm/perl-Data-FlatTables](https://github.com/DavidIAm/perl-Data-FlatTables)
 
 # INCOMPATIBILITIES
 

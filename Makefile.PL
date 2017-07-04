@@ -5,7 +5,6 @@ use inc::Module::Install;
 readme_from 'lib/Set/SegmentTree.pm', 1, 'md';
 readme_from 'lib/Set/SegmentTree.pm';
 license 'perl_5';
-abstract 'Set::SegmentTree - Immutable segment trees with flatbuffers in perl';
 
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
