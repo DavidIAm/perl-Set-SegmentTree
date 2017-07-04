@@ -106,11 +106,11 @@ Start Value and End Values Must be numeric.
 
 Start Value Must be less than End Value
 
-Segment Label Must occur exactly once
+Segment Identity Must occur exactly once
 
 The speed of Set::SegmentTree depends on not being concerned
 with additional segment relevant data, so it is expected one would
-use the label as an index into whatever persistence retains
+use the identity to refer into whatever persistence retains
 additional information about the segment.
 
 Use walkthrough
@@ -161,7 +161,7 @@ list of segments which encompass it in O(log(n)+nk)
 =head1 HOW IT WORKS
 
 =head2 Building Trees
- l=label
+ i=identity
  v=value
  L=low
  H=high
@@ -170,7 +170,7 @@ list of segments which encompass it in O(log(n)+nk)
 1) sort the endpoints  aL, bL, aH, bH
 1) expand to elementary aL->aL, aL->bL, bL->bL, bL->aH, aH->aH, aH->bH, bH->bH
 1) create binary tree from this { Vmin, Vmax, ->low, ->high, @segments }
-1) populate segments on leaf nodes with the labels they relate to (see below)
+1) populate segments on leaf nodes with the identities they relate to (see below)
 1) load into a google flatbuffer table
 
 Each leaf node spans only one of the elementary segments, and has a list
@@ -219,13 +219,13 @@ of all of the segments which matching values within its range.
 The way this works is that after I had constructed the tree, I made a loop
 that finds the leaf nodes.  (they have undefined low/high pointers).
 For each of the leaf nodes I filtered the original segment list
-(pre-expansion so fairly short, and includes the labels), comparing the
+(pre-expansion so fairly short, and includes the identities), comparing the
 values of that leaf node to see if its numbers were inside the range
 that segment addressed. After filtering, I just mapped them to their
-label value.
+identity value.
 
   foreach my $node (grep { is_leaf? } $self->allnodes) {
-    $node->{segments} = map { to_label }
+    $node->{segments} = map { to_identity }
       grep { leafnode_within_segment? } @segments
   }
 
@@ -241,11 +241,11 @@ As you probably know seeking in a binary tree is O(log(n)) complexity.
 Given an value and a root node, yield the segments by:
 
 Given to match a value, node
-1) start with the label set of the current node (noop unless leaf)
-2) union the label sets of the matching subnodes
+1) start with the identity set of the current node (noop unless leaf)
+2) union the identity sets of the matching subnodes
 3) return the set
 
-label sets of the matching subnodes
+identity sets of the matching subnodes
 1) start with the list of possible directions (low, high)
 1) map to a list of subnodes (->low, ->high)
 1) ignore any that are undefined (leaf node condition, no infinite recursion)
@@ -334,7 +334,7 @@ to my use cases.
 
 I suspect that converting the code to be compiled rather than pure
 perl could increase performance.  Also, my inefficient algorithm
-for populating labels into leaf nodes possibly could be improved.
+for populating identities into leaf nodes possibly could be improved.
 
 =head1 MOTIVATION
 

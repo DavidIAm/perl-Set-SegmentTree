@@ -13,7 +13,7 @@ use List::Util qw/reduce/;
 use Set::SegmentTree::ValueLookup;
 use Readonly;
 
-Readonly our $INTERVAL_UUID      => 0;
+Readonly our $INTERVAL_ID        => 0;
 Readonly our $INTERVAL_MIN       => 1;
 Readonly our $INTERVAL_MAX       => 2;
 Readonly our $ELEMENTARY_MIN     => 0;
@@ -95,7 +95,7 @@ sub place_intervals {
     foreach my $node ( @{ $self->{nodelist} } ) {
         next if exists $node->{low};
         $node->{segments} = [
-            map { $_->[$INTERVAL_UUID] } grep {
+            map { $_->[$INTERVAL_ID] } grep {
                        $node->{min} >= $_->[$INTERVAL_MIN]
                     && $node->{max} <= $_->[$INTERVAL_MAX];
             } @intervals
