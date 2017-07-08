@@ -4,7 +4,7 @@ use 5.022001;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Carp qw/confess croak carp/;
 use Set::SegmentTree::ValueLookup;
@@ -380,7 +380,7 @@ at your option, any later version of Perl 5 you may have available.
 
 =head1 VERSION
 
-0.02
+0.03
 
 =head1 AUTHOR
 
