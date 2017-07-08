@@ -4,6 +4,8 @@ package Set::SegmentTree::ValueLookup;
 use strict;
 use warnings;
 
+our $VERSION = '0.05';
+
 sub new {
 	my ($class, %args) = @_;
 	my $self = bless {}, $class;

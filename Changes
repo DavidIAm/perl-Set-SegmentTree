@@ -1,5 +1,8 @@
 Revision history for Perl extension Set::SegmentTree.
 
+0.05  Sat Jul 8 18:14:00 2017
+	- REALLY only require perl 5.006
+
 0.04  Sat Jul 8 01:30:00 2017
 	- Only require perl 5.006
 	- remove the Data::UUID requirement in the test
