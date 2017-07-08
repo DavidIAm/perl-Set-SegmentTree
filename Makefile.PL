@@ -1,4 +1,4 @@
-use 5.022001;
+use 5.006;
 use ExtUtils::MakeMaker;
 use inc::Module::Install;
 

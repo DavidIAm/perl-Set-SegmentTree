@@ -1,5 +1,9 @@
 Revision history for Perl extension Set::SegmentTree.
 
+0.04  Sat Jul 8 01:30:00 2017
+	- Only require perl 5.006
+	- remove the Data::UUID requirement in the test
+
 0.03  Sat Jul 8 01:10:00 2017
 	- Add more dependency pinning to Makefile for tests on old systems
 
