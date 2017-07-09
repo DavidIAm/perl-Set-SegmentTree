@@ -4,13 +4,17 @@
 # - apply perltidy to them (and the main classes)
 # - add version numbers to flattables classes
 # - update version numbers in the main classes
+# - Update the META.yml with the abstract from the doc
 
 # Use the perl data flattables to build our flatbuffer classes
 use lib '../perl-Data-FlatTables';
 use Data::FlatTables;
+use YAML qw/LoadFile Dump/;
 chdir 'lib';
 Data::FlatTables::main('../schema.fbs');
 chdir '..';
+
+our %abstracts;
 
 my $vhandle = IO::File->new('.version');
 our $VERSION = <$vhandle>;
@@ -48,6 +52,20 @@ foreach my $file (
                 }
                 $out->print($_);
             }
+            elsif (/^=head1 NAME/) {
+                $out->print($_);
+                my $skipBlank      = <$in>;
+                $out->print( $skipBlank   );
+                my $line = <$in>;
+                $out->print($line);
+                until ($line =~ /^=/) {
+                  if ($line =~ / - (.+)$/) {
+                    push @{$abstracts{$file}}, $1;
+                  }
+                  $line = <$in>;
+                  $out->print($line);
+                }
+            }
             else {
                 $out->print($_);
             }
@@ -70,4 +88,12 @@ WriteXT(
     # Safe when BOTH distribution and policy file are active and maintained.
     'Test::Perl::Critic' => 't/critic.t',
 );
+
+# and make sure the Makefile regenerates everything, like the readmes.
+system "perl Makefile.PL";
+
+# and update the META abstract
+my $yml = LoadFile('META.yml');
+$yml->{abstract} = $abstracts{'lib/Set/SegmentTree.pm'}[0];
+IO::File->new('META.yml', 'w')->print(Dump $yml);
 
