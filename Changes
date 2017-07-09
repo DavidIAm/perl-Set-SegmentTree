@@ -1,5 +1,9 @@
 Revision history for Perl extension Set::SegmentTree.
 
+0.06 Sat Jul 8 20:42:00 2017
+	- We ACTUALLY require perl 5.013002
+	- And we check by passing minimum version test
+
 0.05  Sat Jul 8 18:14:00 2017
 	- REALLY only require perl 5.006
 

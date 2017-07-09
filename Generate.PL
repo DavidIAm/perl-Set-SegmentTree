@@ -21,7 +21,7 @@ our $VERSION = <$vhandle>;
 chomp $VERSION;
 
 foreach my $file (
-    qw^lib/Set/SegmentTree/node.pm lib/Set/SegmentTree/ValueLookup.pm lib/Set/SegmentTree.pm lib/Set/SegmentTree/Builder.pm^
+    qw^lib/Set/SegmentTree/node.pm lib/Set/SegmentTree/ValueLookup.pm lib/Set/SegmentTree.pm lib/Set/SegmentTree/Builder.pm Makefile.PL^
     )
 {
     my $back = $file . '.bak';
@@ -32,6 +32,7 @@ foreach my $file (
         my $out = IO::File->new( $file, 'w' );
         my $vpat        = '\\d+\\.\\d+';
         my $saw_version = 0;
+        my $saw_abstract = 0;
         while (<$in>) {
             if (/^(our \$VERSION = ')$vpat(';)$/) {
                 $out->print( $1, $VERSION, $2, "\n" );
@@ -66,12 +67,26 @@ foreach my $file (
                   $out->print($line);
                 }
             }
+            elsif (/^abstract/) {
+                print_abstract($out, $abstracts{'lib/Set/SegmentTree.pm'}[0]) unless $saw_abstract;
+                $saw_abstract = 1;
+            }
+            elsif (/^license/) {
+                $out->print($_);
+                print_abstract($out, $abstracts{'lib/Set/SegmentTree.pm'}[0]) unless $saw_abstract;
+                $saw_abstract = 1;
+            }
             else {
                 $out->print($_);
             }
         }
     };
     unlink $back if -s $file;
+}
+
+sub print_abstract {
+  my ($out, $abstract) = @_;
+  $out->print("abstract '$abstract';\n");
 }
 
 use Test::XT 'WriteXT';
@@ -91,9 +106,3 @@ WriteXT(
 
 # and make sure the Makefile regenerates everything, like the readmes.
 system "perl Makefile.PL";
-
-# and update the META abstract
-my $yml = LoadFile('META.yml');
-$yml->{abstract} = $abstracts{'lib/Set/SegmentTree.pm'}[0];
-IO::File->new('META.yml', 'w')->print(Dump $yml);
-
